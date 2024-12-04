@@ -5,5 +5,8 @@ export const DOCS_QUERY = defineQuery(`*[_type == "docs"]{
 }`);
 
 export const DOCS_PAGE_QUERY = defineQuery(
-  `*[_type == "docs" && slug.current == $slug][0]`,
+  `*[_type == "docs" && slug.current == $slug][0]{
+  ...,
+  "toc": body[style in ["h1", "h2", "h3", "h4", "h5", "h6"]]
+}`,
 );

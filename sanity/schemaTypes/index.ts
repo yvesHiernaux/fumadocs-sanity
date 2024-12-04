@@ -5,7 +5,13 @@ const blockContent = defineType({
   title: "Content",
   name: "blockContent",
   type: "array",
-  of: [{ type: "block" }],
+  of: [
+    { type: "block" },
+    {
+      type: "code",
+    },
+    { type: "image" },
+  ],
 });
 
 export const schema: { types: SchemaTypeDefinition[] } = {
