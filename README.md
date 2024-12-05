@@ -38,6 +38,18 @@ pnpm dev
 
 Open http://localhost:3000 with your browser to see the result.
 
+### Deploy
+
+Before deploying, set a studio url in your `.env.production` or hosting platform:
+
+```
+STUDIO_URL=https://my-website.com/studio
+```
+
+Make sure to add your production url to CORS origin in Sanity dashboard too.
+
+You can deploy it to any Next.js compatible platform.
+
 ### Learn More
 
 To learn more about Next.js and Fumadocs, take a look at the following
