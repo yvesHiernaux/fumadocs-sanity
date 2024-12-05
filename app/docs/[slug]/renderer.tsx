@@ -40,7 +40,6 @@ const headingBlocks = Object.fromEntries(
     return [
       `h${h}`,
       (props: PortableTextComponentProps<PortableTextBlock>) => {
-        console.log(props);
         const { value, children } = props;
         const { _key } = value;
 
