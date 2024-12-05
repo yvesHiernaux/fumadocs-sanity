@@ -23,21 +23,23 @@ export default async function Page(props: {
   }).then((res) => res.data);
   if (!page) notFound();
 
+  const toc = page.toc?.map((item) => {
+    return {
+      depth: item.level ?? 0,
+      title: (
+        <Renderer
+          body={{
+            ...(item as PortableTextBlock),
+            style: undefined,
+          }}
+        />
+      ),
+      url: `#${item._key}`,
+    };
+  });
+
   return (
-    <DocsPage
-      toc={page.toc?.map((item) => ({
-        depth: item.level ?? 0,
-        title: (
-          <Renderer
-            body={{
-              ...(item as PortableTextBlock),
-              style: undefined,
-            }}
-          />
-        ),
-        url: `#${item._key}`,
-      }))}
-    >
+    <DocsPage toc={toc}>
       <DocsTitle>{page.title}</DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
       <DocsBody>
