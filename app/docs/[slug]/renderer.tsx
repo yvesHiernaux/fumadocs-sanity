@@ -7,10 +7,11 @@ import {
 } from "@portabletext/react";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { Heading } from "fumadocs-ui/components/heading";
-
+import { Card } from "fumadocs-ui/components/card";
 import { Code } from "@/components/code";
 import { urlFor } from "@/sanity/lib/image";
 import { getImageDimensions } from "@sanity/asset-utils";
+import { buildMarksTree } from "@portabletext/toolkit";
 
 function Image({ value, isInline }: { value: any; isInline: boolean }) {
   const dimensions = getImageDimensions(value);
@@ -67,6 +68,22 @@ const components: Partial<PortableTextReactComponents> = {
     code: (props) => (
       <Code lang={props.value.language} code={props.value.code} />
     ),
+    card: (props) => {
+      const children = buildMarksTree(props.value).map((child: any, i) =>
+        props.renderNode({
+          node: child,
+          isInline: false,
+          index: i,
+          renderNode: props.renderNode,
+        }),
+      );
+
+      return (
+        <Card href={props.value.url} title={props.value.title}>
+          {children}
+        </Card>
+      );
+    },
   },
 };
 

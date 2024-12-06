@@ -1,19 +1,6 @@
-import { defineType, type SchemaTypeDefinition } from "sanity";
-import { docsType } from "./docsType";
-
-const blockContent = defineType({
-  title: "Content",
-  name: "blockContent",
-  type: "array",
-  of: [
-    { type: "block" },
-    {
-      type: "code",
-    },
-    { type: "image" },
-  ],
-});
+import { type SchemaTypeDefinition } from "sanity";
+import { docsType, card, blockContent } from "./docsType";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [blockContent, docsType],
+  types: [card, blockContent, docsType],
 };

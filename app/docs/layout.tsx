@@ -4,21 +4,13 @@ import { baseOptions } from "@/app/layout.config";
 import { DOCS_QUERY } from "@/sanity/lib/queries";
 import { DOCS_QUERYResult } from "@/sanity/types";
 import { PageTree } from "fumadocs-core/server";
-import { sanityFetch, SanityLive } from "@/sanity/lib/live";
-import { draftMode } from "next/headers";
-import { DisableDraftMode } from "@/components/draft-mode";
-import { VisualEditing } from "next-sanity";
+import { sanityFetch } from "@/sanity/lib/live";
+import { Live } from "@/components/live";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <>
-      <SanityLive />
-      {(await draftMode()).isEnabled && (
-        <>
-          <DisableDraftMode />
-          <VisualEditing />
-        </>
-      )}
+      <Live />
       <Content>{children}</Content>
     </>
   );
