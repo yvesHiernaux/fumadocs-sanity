@@ -1,7 +1,5 @@
 "use client";
-import { lazy, type LazyExoticComponent } from "react";
-import type { HighlighterGeneric } from "shiki";
-import type { BundledLanguage, BundledTheme } from "shiki/bundle/web";
+import { type JSX, lazy, useRef, useState } from "react";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
@@ -11,40 +9,80 @@ export interface CodeProps {
   code: string;
 }
 
-const codeMap = new Map<
-  string,
-  LazyExoticComponent<(props: CodeProps) => JSX.Element | null>
->();
+/**
+ * Pre-render codeblock on server
+ */
+function createPreRenderer(props: CodeProps) {
+  return lazy(async () => {
+    const result = await render(props.lang, props.code);
+
+    return {
+      default() {
+        return result;
+      },
+    };
+  });
+}
+
+const idMap = new Map<string, ReturnType<typeof createPreRenderer>>();
+
+interface Task {
+  key: string;
+  aborted: boolean;
+}
 
 export function Code(props: CodeProps) {
-  let CodeLazy = codeMap.get(props.lang);
+  const key = `${props.lang}:${props.code}`;
+  const currentTask = useRef<Task>();
+  const [rendered, setRendered] = useState<JSX.Element | null>(() => {
+    let Prerender = idMap.get(key);
 
-  if (!CodeLazy) {
-    CodeLazy = lazy(async () => {
-      const { getSingletonHighlighter } = await import("shiki/bundle/web");
+    if (!Prerender) {
+      Prerender = createPreRenderer(props);
+      idMap.set(key, Prerender);
+    }
 
-      const highlighter = await getSingletonHighlighter({
-        langs: [props.lang],
-        themes: ["vesper", "one-light"],
-      });
+    currentTask.current = {
+      key,
+      aborted: false,
+    };
 
-      return {
-        default(props: CodeProps) {
-          return render(highlighter, props.lang, props.code);
-        },
-      };
+    return <Prerender />;
+  });
+
+  // on change
+  if (
+    typeof window !== "undefined" &&
+    (!currentTask.current || currentTask.current.key !== key)
+  ) {
+    if (currentTask.current) {
+      currentTask.current.aborted = true;
+    }
+
+    const task: Task = {
+      key,
+      aborted: false,
+    };
+    currentTask.current = task;
+
+    render(props.lang, props.code).then((result) => {
+      if (task.aborted) return;
+      setRendered(result);
     });
   }
 
-  codeMap.set(props.lang, CodeLazy);
-
-  return <CodeLazy {...props} />;
+  return rendered;
 }
 
-type Highlighter = HighlighterGeneric<BundledLanguage, BundledTheme>;
-
-function render(highlighter: Highlighter, lang: string, code: string) {
+async function render(lang: string, code: string) {
   if (!code) return null;
+
+  const { getSingletonHighlighter } = await import("shiki/bundle/web");
+  const highlighter = await getSingletonHighlighter({
+    langs: [lang],
+    themes: ["vesper", "one-light"],
+  });
+
   const hast = highlighter.codeToHast(code, {
     lang,
     themes: {
